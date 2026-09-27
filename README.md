@@ -1,13 +1,14 @@
 # keycast
 
+[![CI](https://github.com/sasukevibes/omarchy-keycast/actions/workflows/ci.yml/badge.svg)](https://github.com/sasukevibes/omarchy-keycast/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Shows your keystrokes on screen while you record with Omarchy's built-in recorder.**
 
 Start a recording the way you already do (`ALT + PRINT`, the Capture menu,
 or webcam mode) and keycast draws your shortcuts, typing, and clicks as key
 caps in your current Omarchy theme. The recorder captures them like anything
 else on screen. When the recording stops, keycast goes away.
-
-<!-- demo.gif goes here: record it with keycast itself -->
 
 - **Theme-matched key caps.** Colours come from your Omarchy theme and
   change when you switch themes.
@@ -62,7 +63,7 @@ password. For a password prompt instead, change `allow_active` to
 
 ## Privacy
 
-You are about to post this video publicly, so keycast hides typed text
+Recordings get shared, so keycast hides typed text
 (shortcuts still show) when:
 
 - the screen is locked, or the polkit password dialog is open
@@ -123,6 +124,11 @@ Add `{"helperCommand": ["/path/to/tests/fake-keycastd"]}` to the config to
 work on the overlay without root. See [docs/DESIGN.md](docs/DESIGN.md) for the
 protocol and design.
 
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Please report security problems privately as described in [SECURITY.md](SECURITY.md).
+
 ## License
 
-MIT
+[MIT](LICENSE)

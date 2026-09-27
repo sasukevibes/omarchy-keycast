@@ -9,7 +9,7 @@ Keystroke and click overlay for Omarchy's built-in screen recorder.
 - Work with every existing way of starting a recording (`ALT+PRINT`, the
   Capture menu, webcam mode) without patching `omarchy-capture-screenrecording`.
 - Never be able to read keys unless a recording is running.
-- Never leak a password into a video that is about to be posted publicly.
+- Never leak a password into a recording.
 
 Non-goals for v1: post-recording burn-in, subtitle sidecars, X11, non-Hyprland
 compositors.
@@ -42,9 +42,8 @@ A small helper that is started by the plugin only while a recording runs.
    a file path.
 3. **Recording gate.** A privileged run exits unless a `gpu-screen-recorder`
    process owned by the same user exists, and keeps checking `/proc` twice a
-   second, exiting as soon as it is gone. The promise we can make publicly is:
-   *keycast can only read your keyboard while the red recording indicator is on
-   in your bar.* Unprivileged runs (a user already in the `input` group, or
+   second, exiting as soon as it is gone: keycast can only read the keyboard while
+   the recording indicator is on. Unprivileged runs (a user already in the `input` group, or
    development) skip the gate.
 4. **Translate.** One `xkbcommon` state, built from the Hyprland keyboard
    layout the plugin passes in (`--layout`, `--variant`, `--options`, `--model`), is
@@ -157,13 +156,3 @@ We rejected two alternatives:
 - A password typed into a browser field whose window title looks harmless
   is only protected by the pause hotkey and the terminal heuristics. The
   README says this prominently.
-
-## Build order
-
-1. `keycastd`: device discovery, xkb translation, JSON output, and unit
-   tests over synthetic event streams.
-2. Privilege drop, recording gate, polkit policy, and `install.sh`.
-3. Plugin: `Model.js` with node tests, then the overlay and recording
-   watcher.
-4. Privacy signals, pause IPC, bind labels, and click ripples.
-5. README, demo GIF, validate with `omarchy plugin validate`, then go public.

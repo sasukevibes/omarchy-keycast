@@ -141,7 +141,7 @@ test("sensitive windows and layers", () => {
   assert.ok(Model.isSensitiveWindow("org.gnupg.pinentry-qt", ""))
   assert.ok(Model.isSensitiveWindow("1Password", "1Password"))
   assert.ok(Model.isSensitiveWindow("chromium", "Sign in - Google Accounts"))
-  assert.ok(Model.isSensitiveWindow("Alacritty", "[sudo] password for ashton"))
+  assert.ok(Model.isSensitiveWindow("Alacritty", "[sudo] password for user"))
   assert.ok(!Model.isSensitiveWindow("Alacritty", "nvim README.md"))
   assert.ok(!Model.isSensitiveWindow("chromium", "Pinterest"))
   assert.ok(Model.isSensitiveLayer("omarchy-polkit"))
