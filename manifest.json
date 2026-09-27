@@ -2,13 +2,24 @@
   "schemaVersion": 1,
   "id": "sasukevibes.keycast",
   "name": "keycast",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "sasukevibes",
   "license": "MIT",
   "description": "Shows your keystrokes, shortcuts, and clicks on screen while Omarchy's screen recorder runs, with Hyprland bind labels and password masking.",
-  "kinds": ["service"],
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
   "keepLoaded": true,
   "entryPoints": {
-    "service": "Service.qml"
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "keycast",
+    "description": "Turn keycast on or off and set click and size options",
+    "category": "Capture",
+    "allowMultiple": false,
+    "defaultSection": "right"
   }
 }

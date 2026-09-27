@@ -18,7 +18,11 @@ Item {
 
   // ---- settings (~/.config/keycast/config.json, all optional) ----
   property var config: ({})
-  readonly property real scale: positive(config.scale, 1)
+  // Master switch from the bar widget: off means no helper and no overlay,
+  // so a recording can be made without keys on screen.
+  readonly property bool castEnabled: config.enabled !== false
+  readonly property string sizeName: Model.sizeName(config)
+  readonly property real scale: Model.scaleFor(config)
   readonly property int fadeMs: Math.round(positive(config.fadeMs, Model.DEFAULTS.fadeMs))
   readonly property bool showText: config.showText !== false
   readonly property bool showClicks: config.showClicks !== false
@@ -74,9 +78,57 @@ Item {
     printErrors: false
     onFileChanged: reload()
     onLoaded: {
-      try { root.config = JSON.parse(text()) || {} } catch (e) { root.config = {} }
+      // A read that races a write can see half a file; keep what we had.
+      try { root.config = JSON.parse(text()) || {} } catch (e) {}
     }
     onLoadFailed: root.config = {}
+  }
+
+  // Settings changed from the bar widget or IPC. Updates take effect at once
+  // and are saved so they survive a restart.
+  function setSetting(key, value) {
+    var next = Object.assign({}, root.config)
+    if (value === null || value === undefined) delete next[key]
+    else next[key] = value
+    root.config = next
+    configWriter.write(JSON.stringify(next, null, 2))
+  }
+
+  FileWriter {
+    id: configWriter
+    path: root.configPath
+  }
+
+  // A small state file for the bar widget. Replacement bars don't give
+  // widgets access to this service, so the widget reads this file and
+  // changes settings through `omarchy-shell keycast …` instead.
+  readonly property string statePath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/keycast/state.json"
+  readonly property string publicState: JSON.stringify({
+    enabled: root.castEnabled,
+    showClicks: root.showClicks,
+    size: root.sizeName,
+    recording: root.recording,
+    helper: root.helperStatus,
+  })
+  onPublicStateChanged: stateWriter.write(root.publicState)
+  Component.onCompleted: stateWriter.write(root.publicState)
+
+  FileWriter {
+    id: stateWriter
+    path: root.statePath
+  }
+
+  onCastEnabledChanged: {
+    if (!root.castEnabled) {
+      helperProc.running = false
+      root.helperStatus = "off"
+      root.clear()
+    } else if (root.recording) {
+      root.helperStartedThisRecording = false
+      contextProc.running = true
+    } else {
+      root.helperStatus = "idle"
+    }
   }
 
   // ---- recording detection ----
@@ -136,7 +188,6 @@ Item {
     var args = ["--layout", ctx.layout || "us", "--variant", ctx.variant || "",
                 "--options", ctx.options || "", "--model", ctx.model || ""]
     if (ctx.taps) args.push("--taps")
-    if (!root.showClicks) args.push("--no-pointer")
     // Development override: run an unprivileged command instead of pkexec.
     if (Array.isArray(root.config.helperCommand) && root.config.helperCommand.length)
       return root.config.helperCommand.concat(args)
@@ -145,7 +196,7 @@ Item {
   }
 
   function startHelper(ctx) {
-    if (root.helperStartedThisRecording || helperProc.running) return
+    if (!root.castEnabled || root.helperStartedThisRecording || helperProc.running) return
     root.helperStartedThisRecording = true
     var command = helperCommand(ctx)
     if (!command) {
@@ -185,7 +236,7 @@ Item {
     if (ev.type === "hello") { root.helperStatus = "live"; return }
     if (ev.type === "error") { root.lastError = ev.message || ""; return }
     if (ev.type === "bye") return
-    if (root.recording) feed(ev)
+    if (root.recording && root.castEnabled) feed(ev)
   }
 
   // ---- model ----
@@ -347,6 +398,18 @@ Item {
     return out
   }
 
+  // A short sample on the focused monitor so a size change can be seen.
+  function startPreview() {
+    if (root.recording) return
+    root.clear()
+    root.target = "focused"
+    root.demoScript = [[0, key("Return", "", ["SUPER"], 28)]].concat(typed("keycast"))
+    root.demoIndex = 0
+    root.demoActive = true
+    demoTimer.interval = 0
+    demoTimer.restart()
+  }
+
   function startDemo() {
     var s = []
     s.push([300, key("Return", "", ["SUPER"], 28)])
@@ -408,6 +471,29 @@ Item {
       return root.paused ? "paused" : "live"
     }
     function demo(): string { root.startDemo(); return "ok" }
+    function preview(): string { root.startPreview(); return "ok" }
+    function toggle(): string {
+      root.setSetting("enabled", !root.castEnabled)
+      root.notify(root.castEnabled ? "keycast on" : "keycast off",
+                  root.castEnabled ? "Keys will show in recordings." : "Recordings won't show keys until you turn it back on.")
+      return root.castEnabled ? "on" : "off"
+    }
+    function enable(): string { root.setSetting("enabled", true); return "on" }
+    function setClicks(value: string): string {
+      root.setSetting("showClicks", value === "on" || value === "true")
+      return root.showClicks ? "on" : "off"
+    }
+    function disable(): string { root.setSetting("enabled", false); return "off" }
+    function toggleClicks(): string {
+      root.setSetting("showClicks", !root.showClicks)
+      return root.showClicks ? "on" : "off"
+    }
+    function setSize(size: string): string {
+      if (!Model.SIZES.hasOwnProperty(size)) return "unknown size: use small, medium, or large"
+      root.setSetting("size", size)
+      root.startPreview()
+      return size
+    }
     function status(): string {
       return JSON.stringify({
         recording: root.recording,
@@ -419,10 +505,13 @@ Item {
         sensitiveWindow: root.sensitiveWindow,
         sensitiveLayers: root.sensitiveLayerCount,
         textHidden: root.suppressText,
+        enabled: root.castEnabled,
+        size: root.sizeName,
+        showClicks: root.showClicks,
         binds: root.binds.length,
       })
     }
     function ping(): string { return "ok" }
-    function version(): string { return "0.1.0" }
+    function version(): string { return "0.2.0" }
   }
 }

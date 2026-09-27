@@ -208,3 +208,21 @@ test("areaOn places keys in the recorded monitor or region", () => {
   assert.deepEqual(Model.areaOn("focused", left, "DP-1"), { x: 0, y: 0, w: 1920, h: 1080 })
   assert.equal(Model.areaOn("focused", right, "DP-1"), null)
 })
+
+// ---- settings ----
+
+test("size presets map to overlay scale", () => {
+  assert.equal(Model.scaleFor({}), 1)
+  assert.equal(Model.scaleFor({ size: "small" }), 0.75)
+  assert.equal(Model.scaleFor({ size: "large" }), 1.35)
+  assert.equal(Model.scaleFor({ scale: 1.2 }), 1.2)
+  assert.equal(Model.scaleFor({ size: "large", scale: 0.5 }), 1.35)
+  assert.equal(Model.scaleFor({ size: "huge", scale: -1 }), 1)
+})
+
+test("sizeName reports the preset to highlight", () => {
+  assert.equal(Model.sizeName({}), "medium")
+  assert.equal(Model.sizeName({ size: "small" }), "small")
+  assert.equal(Model.sizeName({ scale: 1.35 }), "large")
+  assert.equal(Model.sizeName({ scale: 1.2 }), "")
+})
