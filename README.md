@@ -20,6 +20,8 @@ else on screen. When the recording stops, keycast goes away.
 - **Clicks and touchpad taps** show as caps with a ripple at the pointer.
 - **Region-aware.** Record a region and the keys appear inside that region.
 - **Password masking.** See [Privacy](#privacy).
+- **Bar widget.** Turn keycast on or off, hide mouse clicks, and pick a
+  small, medium, or large overlay from your bar.
 
 ## Install
 
@@ -33,6 +35,13 @@ omarchy plugin add https://github.com/sasukevibes/omarchy-keycast --enable
 
 `install.sh` builds the small `keycastd` helper and installs it with a
 polkit rule (it asks for sudo once). That's it: start a recording.
+
+Already installed? Update and restart the shell:
+
+```bash
+omarchy plugin update sasukevibes.keycast
+omarchy restart shell
+```
 
 To preview the overlay without recording:
 
@@ -83,23 +92,40 @@ detected**. Bind a pause key and use it:
 o.bind("SUPER + ALT + PRINT", "Pause keycast", "omarchy-shell keycast togglePause")
 ```
 
-## Configure
+## Settings
 
-Optional: `~/.config/keycast/config.json`
+Click the ⌨ icon in your bar for the settings panel:
+
+- **Show keystrokes:** turn keycast off to record without keys on screen.
+  Right-clicking the icon does the same.
+- **Show mouse clicks:** hide click caps and ripples.
+- **Size:** small, medium, or large. A preview plays when you pick one.
+
+If the icon isn't on your bar, add it with
+`omarchy bar put sasukevibes.keycast right`.
+
+Settings are saved to `~/.config/keycast/config.json`. The file also takes a
+few options the panel doesn't show:
 
 ```json
 {
-  "scale": 1.0,
+  "enabled": true,
+  "showClicks": true,
+  "size": "medium",
   "position": "bottom",
   "fadeMs": 1500,
   "showText": true,
-  "showClicks": true,
   "showBindLabels": true
 }
 ```
 
+Everything is also scriptable, so you can bind it to keys:
+
 | Command | Effect |
 | --- | --- |
+| `omarchy-shell keycast toggle` | turn keycast on or off |
+| `omarchy-shell keycast toggleClicks` | show or hide mouse clicks |
+| `omarchy-shell keycast setSize large` | `small`, `medium`, or `large` |
 | `omarchy-shell keycast togglePause` | hide typed text until toggled back |
 | `omarchy-shell keycast demo` | play a sample sequence on screen |
 | `omarchy-shell keycast status` | JSON state, for troubleshooting |
