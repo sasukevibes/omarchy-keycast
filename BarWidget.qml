@@ -16,7 +16,7 @@ Panel {
   readonly property bool ready: state.enabled !== undefined
   readonly property bool castEnabled: state.enabled !== false
   readonly property bool showClicks: state.showClicks !== false
-  readonly property string sizeName: state.size || "medium"
+  readonly property string sizeName: state.size === undefined ? "medium" : state.size
   readonly property bool live: !!state.recording && state.helper === "live"
   readonly property var sizes: ["small", "medium", "large"]
 
@@ -167,7 +167,8 @@ Panel {
               Button {
                 required property string modelData
                 width: sizeRow.cellWidth
-                text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                text: modelData.charAt(0).toUpperCase()
+                Accessible.name: modelData.charAt(0).toUpperCase() + modelData.slice(1)
                 fontSize: Style.font.bodySmall
                 foreground: root.bar.foreground
                 fontFamily: root.bar.fontFamily

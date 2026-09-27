@@ -119,6 +119,10 @@ in the middle of a recording.
   `$XDG_RUNTIME_DIR/keycast/state.json`, which the service rewrites whenever
   its public state changes, and makes changes through the IPC commands above.
   That way it behaves the same on the stock bar and on custom bars.
+  The S/M/L buttons leave custom numeric scales unselected. Turning keycast
+  off cancels queued demo events and clears the overlay; a new recording also
+  cancels any preview so sample keys cannot enter it. Clicks already displayed
+  and pending pointer lookups are suppressed when `showClicks` is disabled.
 
 ## Privacy
 

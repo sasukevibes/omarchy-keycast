@@ -11,6 +11,13 @@ node --test tests/*.test.js
 omarchy plugin validate .
 ```
 
+The settings integration test uses Quickshell, the Omarchy shell UI, and
+Sway's headless backend with software rendering. It runs the real widget and
+service on a private Wayland display with temporary settings and fake input;
+it never connects to your desktop or reads input devices. It skips when these
+test dependencies are unavailable. To save a test-panel screenshot, install
+`grim` and run `KEYCAST_TEST_SCREENSHOT=/tmp/keycast-settings.png node --test tests/settings.test.js`.
+
 To try the overlay against your running shell, run `scripts/dev-sync --restart`.
 To work on it without installing the helper, point `helperCommand` in
 `~/.config/keycast/config.json` at `tests/fake-keycastd`.
