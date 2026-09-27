@@ -43,6 +43,14 @@ omarchy plugin update sasukevibes.keycast
 omarchy restart shell
 ```
 
+When upgrading from the service-only version, move its existing entry onto
+the bar by disabling and re-enabling the plugin:
+
+```bash
+omarchy plugin disable sasukevibes.keycast
+omarchy plugin enable sasukevibes.keycast --section right
+```
+
 To preview the overlay without recording:
 
 ```bash
