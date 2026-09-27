@@ -105,14 +105,16 @@ in the middle of a recording.
   restyles on theme switch. `KeyRow` and `Keycap` draw the rows, and `Ripple`
   draws click rings at the position returned by `hyprctl cursorpos`.
 - **IPC** (`omarchy-shell keycast …`): `toggle`, `enable`, `disable`,
-  `toggleClicks`, `setClicks`, `setSize`, `pause`, `resume`, `togglePause`,
-  `demo` (plays a scripted sequence without the helper), `preview`, `status`.
+  `toggleClicks`, `setClicks`, `toggleSuperOnly`, `setSuperOnly`, `setSize`,
+  `pause`, `resume`, `togglePause`, `demo` (plays a scripted sequence without the helper), `preview`, `status`.
 - **Settings** live in `~/.config/keycast/config.json`: `enabled`,
-  `showClicks`, `size` (`small`, `medium`, `large`; a numeric `scale` also
-  works), `position`, `fadeMs`, `showText`, `showBindLabels`, and
+  `showClicks`, `superOnly`, `size` (`small`, `medium`, `large`; a numeric
+  `scale` also works), `position`, `fadeMs`, `showText`, `showBindLabels`, and
   `helperCommand`, a development override that runs an unprivileged command,
   e.g. `tests/fake-keycastd`, instead of pkexec. When `enabled` is false, no
-  helper runs during recordings.
+  helper runs during recordings. When `superOnly` is true, the service drops
+  every event whose modifiers don't include SUPER (`Model.heldSuper`) before
+  it reaches the display model.
 - **Bar widget** (`BarWidget.qml`) is an icon plus a settings panel.
   Replacement bars don't give widgets access to plugin services, so the
   widget never touches the service directly. It reads
