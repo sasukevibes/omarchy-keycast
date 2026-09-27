@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>keycast</vendor>
+  <vendor_url>https://github.com/sasukevibes/omarchy-keycast</vendor_url>
+
+  <!--
+    Lets the active local session start keycastd without a password. The
+    helper opens input devices, immediately drops to the calling user, and
+    exits unless that user's gpu-screen-recorder is running. For a password
+    prompt instead, change allow_active to auth_admin_keep.
+  -->
+  <action id="dev.keycast.keycastd">
+    <description>Show keystrokes in a screen recording</description>
+    <message>Authentication is required to read keystrokes for the recording overlay</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@HELPER@</annotate>
+  </action>
+</policyconfig>

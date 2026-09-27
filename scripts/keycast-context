@@ -1,0 +1,39 @@
+#!/bin/bash
+# Collects what keycast needs from Hyprland when a recording starts, as one
+# JSON object: the keyboard layout, bind list, tap-to-click setting, focused
+# window, and where keycastd is installed.
+
+window=$(hyprctl activewindow -j 2>/dev/null | jq -c 'if type == "object" then . else {} end' 2>/dev/null)
+
+helper=""
+for candidate in /usr/lib/keycast/keycastd /usr/local/lib/keycast/keycastd; do
+  if [[ -x $candidate ]]; then
+    helper=$candidate
+    break
+  fi
+done
+
+# The bind list is too large for argv, so everything goes through files.
+json_or() { local out; out=$("$@" 2>/dev/null) && jq -e . >/dev/null 2>&1 <<<"$out" && printf '%s' "$out" || printf 'null'; }
+
+jq -cn \
+  --slurpfile devices <(json_or hyprctl devices -j) \
+  --slurpfile binds <(json_or hyprctl binds -j) \
+  --slurpfile tap <(json_or hyprctl getoption input:touchpad:tap-to-click -j) \
+  --slurpfile window <(printf '%s' "${window:-null}") \
+  --arg helper "$helper" '
+  ($devices[0] // {}) as $d
+  | ($tap[0] // {}) as $t
+  | ($window[0] // {}) as $w
+  | ([$d.keyboards[]? | select(.main)][0] // $d.keyboards[0]? // {}) as $kb
+  | {
+      layout: ($kb.layout // "us"),
+      variant: ($kb.variant // ""),
+      options: ($kb.options // ""),
+      model: ($kb.model // ""),
+      taps: ($t.bool // ($t.int == 1)),
+      binds: ($binds[0] // []),
+      windowClass: ($w.class // ""),
+      windowTitle: ($w.title // ""),
+      helper: $helper
+    }'
