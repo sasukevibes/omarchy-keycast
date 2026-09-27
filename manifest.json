@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "sasukevibes.keycast",
+  "name": "keycast",
+  "version": "0.1.0",
+  "author": "sasukevibes",
+  "license": "MIT",
+  "description": "Shows your keystrokes, shortcuts, and clicks on screen while Omarchy's screen recorder runs, with Hyprland bind labels and password masking.",
+  "kinds": ["service"],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}

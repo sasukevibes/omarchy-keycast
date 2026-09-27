@@ -1,0 +1,15 @@
+#!/bin/bash
+# Copy the plugin into ~/.config/omarchy/plugins, the way `omarchy plugin
+# add` would install it. The shell keeps a loaded service's compiled QML
+# until it restarts, so pass --restart to pick up QML changes.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEST="$HOME/.config/omarchy/plugins/sasukevibes.keycast"
+[[ -L $DEST ]] && rm "$DEST"
+mkdir -p "$DEST"
+rsync -a --delete --exclude .git --exclude 'keycastd/target' "$ROOT/" "$DEST/"
+echo "synced to $DEST"
+if [[ ${1:-} == --restart ]]; then
+  omarchy-restart-shell >/dev/null 2>&1
+  echo "shell restarted"
+fi

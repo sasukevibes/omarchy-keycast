@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+// Stands in for keycastd during development: speaks the same protocol but
+// emits a fixed script instead of reading devices. Point the plugin at it
+// with {"helperCommand": ["/path/to/tests/fake-keycastd"]} in
+// ~/.config/keycast/config.json. Arguments are logged to stderr and ignored.
+"use strict"
+
+process.stderr.write("fake-keycastd args: " + process.argv.slice(2).join(" ") + "\n")
+const out = ev => process.stdout.write(JSON.stringify(ev) + "\n")
+const key = (sym, text, mods, code) => ({ type: "key", code: code || 0, sym, text: text || "", mods: mods || [], repeat: false })
+
+const script = [
+  [200, key("Return", "", ["SUPER"], 28)],
+  ...Array.from("hello from keycastd").map(ch => [60, key(ch === " " ? "space" : ch, ch)]),
+  [600, key("s", "", ["CTRL"], 31)],
+  [500, { type: "click", button: "right", mods: [], tap: true }],
+]
+
+out({ type: "hello", v: 1, version: "fake", keyboards: 1, pointers: 1, touchpads: 1, gated: false })
+let i = 0
+const step = () => {
+  if (i >= script.length) return setInterval(() => {}, 1 << 30)
+  const [delay, ev] = script[i++]
+  setTimeout(() => { out(ev); step() }, delay)
+}
+step()

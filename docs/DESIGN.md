@@ -21,7 +21,7 @@ compositors.
 ┌──────────────────────────────────────┐  pkexec   ┌──────────────────────────┐
 │ sasukevibes.keycast  (service plugin) │ ────────▶ │ keycastd (Rust)          │
 │                                      │           │  open /dev/input/event*  │
-│  RecordingWatch ── pgrep gsr (1 Hz)  │  stdout   │  drop to PKEXEC_UID      │
+│  recorder watch ── pgrep gsr (0.7 s) │  stdout   │  drop to PKEXEC_UID      │
 │  Model.js  ◀──── JSON lines ──────── │ ◀──────── │  xkbcommon → keysyms     │
 │  Overlay.qml (layer-shell, no input) │           │  exit when gsr stops     │
 └──────────────────────────────────────┘           └──────────────────────────┘
@@ -78,11 +78,16 @@ A small helper that is started by the plugin only while a recording runs.
 ### Plugin (repo root, `sasukevibes.keycast`)
 
 A `service` plugin with `keepLoaded: true`, mounted inside `omarchy-shell`.
+Keeping it loaded means a reload of some other plugin cannot kill the helper
+in the middle of a recording.
 
-- **RecordingWatch** runs `pgrep -x gpu-screen-recorder` once a second and
-  also on the IPC call `omarchy-shell keycast refresh`. When a recording starts
-  it reads the layout from `hyprctl devices -j` (the `main` keyboard) and starts
-  `pkexec <libexec>/keycastd …`. It stops the helper when the recording ends.
+- **Recorder watch** runs `pgrep -a -f ^gpu-screen-recorder` every 0.7 s. The
+  recorder's `-w` argument gives the recorded monitor or region
+  (`Model.recorderTarget`), so the keys are drawn inside what is being
+  captured. When a recording starts, `scripts/keycast-context` collects the
+  layout (the `main` keyboard in `hyprctl devices -j`), the binds,
+  tap-to-click, the focused window, and the helper path. The service then
+  starts `pkexec <helper> …` and stops it when the recording ends.
 - **Model.js** is a pure JavaScript state machine, tested with `node --test`.
   It turns protocol events into display rows:
   - *combo* rows: key caps such as `SUPER` `SHIFT` `Enter`, with a `×N`
@@ -98,7 +103,14 @@ A `service` plugin with `keepLoaded: true`, mounted inside `omarchy-shell`.
 - **Overlay.qml** is one layer-shell `PanelWindow` per screen on the Overlay
   layer, with an empty input mask so it never takes clicks, focus, or
   exclusive space. Colours come from the Omarchy theme (`qs.Commons`), so it
-  restyles on theme switch.
+  restyles on theme switch. `KeyRow` and `Keycap` draw the rows, and `Ripple`
+  draws click rings at the position returned by `hyprctl cursorpos`.
+- **IPC** (`omarchy-shell keycast …`): `pause`, `resume`, `togglePause`,
+  `demo` (plays a scripted sequence without the helper), `status`.
+- **Settings** live in `~/.config/keycast/config.json`: `scale`, `position`,
+  `fadeMs`, `showText`, `showClicks`, `showBindLabels`, and
+  `helperCommand`, a development override that runs an unprivileged command,
+  e.g. `tests/fake-keycastd`, instead of pkexec.
 
 ## Privacy
 
