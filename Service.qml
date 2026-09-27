@@ -34,7 +34,7 @@ Item {
   // "monitor:<name>", "region:<x>,<y>,<w>,<h>" (global logical px), or "focused".
   property string target: "focused"
   property bool demoActive: false
-  readonly property bool active: recording || demoActive
+  readonly property bool active: castEnabled && (recording || demoActive)
   property bool helperStartedThisRecording: false
   property string helperStatus: "idle"
   property string lastError: ""
@@ -120,6 +120,7 @@ Item {
 
   onCastEnabledChanged: {
     if (!root.castEnabled) {
+      root.stopDemo()
       helperProc.running = false
       root.helperStatus = "off"
       root.clear()
@@ -128,6 +129,14 @@ Item {
       contextProc.running = true
     } else {
       root.helperStatus = "idle"
+    }
+  }
+
+  onShowClicksChanged: {
+    if (!root.showClicks) {
+      root.castState = Model.scrubClicks(root.castState)
+      root.syncRows()
+      ripplesModel.clear()
     }
   }
 
@@ -155,6 +164,8 @@ Item {
     if (isRecording === root.recording) return
     root.recording = isRecording
     if (isRecording) {
+      root.stopDemo()
+      root.clear()
       root.helperStartedThisRecording = false
       root.lastError = ""
       // watchChanges cannot see a file created after load, so re-read the
@@ -163,7 +174,7 @@ Item {
       contextProc.running = true
     } else {
       helperProc.running = false
-      root.helperStatus = "idle"
+      root.helperStatus = root.castEnabled ? "idle" : "off"
       root.locked = false
       if (!root.demoActive) root.clear()
     }
@@ -220,8 +231,8 @@ Item {
     onExited: function(exitCode) {
       var wasLive = root.helperStatus === "live"
       // Stopping it ourselves when the recording ends is not a failure.
-      root.helperStatus = exitCode === 0 || !root.recording ? "idle" : "failed"
-      if (exitCode !== 0 && root.recording && !wasLive) {
+      root.helperStatus = !root.castEnabled ? "off" : (exitCode === 0 || !root.recording ? "idle" : "failed")
+      if (exitCode !== 0 && root.recording && root.castEnabled && !wasLive) {
         var why = exitCode === 126 || exitCode === 127
           ? "Permission was denied. Re-run install.sh to install the polkit rule."
           : (root.lastError || "keycastd exited with status " + exitCode)
@@ -231,6 +242,7 @@ Item {
   }
 
   function onHelperLine(line) {
+    if (!root.recording || !root.castEnabled) return
     var ev
     try { ev = JSON.parse(line) } catch (e) { return }
     if (ev.type === "hello") { root.helperStatus = "live"; return }
@@ -247,6 +259,7 @@ Item {
   }
 
   function feed(ev) {
+    if (!root.active) return
     if (!root.showText && isTyping(ev)) return
     if (!root.showClicks && ev.type === "click") return
     var t = Date.now()
@@ -319,7 +332,7 @@ Item {
     command: ["hyprctl", "cursorpos", "-j"]
     stdout: StdioCollector { id: cursorOut }
     onExited: function(exitCode) {
-      if (exitCode !== 0) return
+      if (exitCode !== 0 || !root.active || !root.showClicks) return
       try {
         var p = JSON.parse(cursorOut.text)
         ripplesModel.append({ px: p.x, py: p.y, born: Date.now(), button: cursorProc.button })
@@ -400,7 +413,7 @@ Item {
 
   // A short sample on the focused monitor so a size change can be seen.
   function startPreview() {
-    if (root.recording) return
+    if (!root.castEnabled || root.recording) return
     root.clear()
     root.target = "focused"
     root.demoScript = [[0, key("Return", "", ["SUPER"], 28)]].concat(typed("keycast"))
@@ -410,7 +423,13 @@ Item {
     demoTimer.restart()
   }
 
+  function stopDemo() {
+    demoTimer.stop()
+    root.demoActive = false
+  }
+
   function startDemo() {
+    if (!root.castEnabled || root.recording) return
     var s = []
     s.push([300, key("Return", "", ["SUPER"], 28)])
     s = s.concat(typed("git commit -m \"ship it\""))

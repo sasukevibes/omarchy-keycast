@@ -225,4 +225,18 @@ test("sizeName reports the preset to highlight", () => {
   assert.equal(Model.sizeName({ size: "small" }), "small")
   assert.equal(Model.sizeName({ scale: 1.35 }), "large")
   assert.equal(Model.sizeName({ scale: 1.2 }), "")
+  for (const scale of [0, -1, "invalid", null])
+    assert.equal(Model.sizeName({ scale }), "medium")
+})
+
+test("disabling clicks removes existing click rows without clearing keys or privacy state", () => {
+  let state = Model.apply(Model.create(), { type: "key", sym: "a", text: "a", mods: [] }, {}, 0)
+  state = Model.apply(state, { type: "click", button: "left", mods: [] }, {}, 1)
+  state.maskLine = true
+  const next = Model.scrubClicks(state)
+  assert.equal(state.rows.length, 2)
+  assert.equal(next.rows.length, 1)
+  assert.equal(next.rows[0].kind, "text")
+  assert.equal(next.rows[0].text, "a")
+  assert.equal(next.maskLine, true)
 })

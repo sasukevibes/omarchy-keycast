@@ -99,10 +99,14 @@ Click the ⌨ icon in your bar for the settings panel:
 - **Show keystrokes:** turn keycast off to record without keys on screen.
   Right-clicking the icon does the same.
 - **Show mouse clicks:** hide click caps and ripples.
-- **Size:** small, medium, or large. A preview plays when you pick one.
+- **Size:** S (small), M (medium), or L (large). A preview plays when you
+  pick one while keycast is on and no recording is running.
+
+Turning keycast off immediately clears the overlay and stops any preview.
+Turning mouse clicks off also clears existing click caps and ripples.
 
 If the icon isn't on your bar, add it with
-`omarchy bar put sasukevibes.keycast right`.
+`omarchy bar put sasukevibes.keycast --section right`.
 
 Settings are saved to `~/.config/keycast/config.json`. The file also takes a
 few options the panel doesn't show:
