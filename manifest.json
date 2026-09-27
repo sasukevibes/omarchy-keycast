@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "sasukevibes.keycast",
   "name": "keycast",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "sasukevibes",
   "license": "MIT",
   "description": "Shows your keystrokes, shortcuts, and clicks on screen while Omarchy's screen recorder runs, with Hyprland bind labels and password masking.",
@@ -17,7 +17,7 @@
   },
   "barWidget": {
     "displayName": "keycast",
-    "description": "Turn keycast on or off and set click and size options",
+    "description": "Turn keycast on or off and set click, SUPER-only, and size options",
     "category": "Capture",
     "allowMultiple": false,
     "defaultSection": "right"

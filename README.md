@@ -20,8 +20,10 @@ else on screen. When the recording stops, keycast goes away.
 - **Clicks and touchpad taps** show as caps with a ripple at the pointer.
 - **Region-aware.** Record a region and the keys appear inside that region.
 - **Password masking.** See [Privacy](#privacy).
-- **Bar widget.** Turn keycast on or off, hide mouse clicks, and pick a
-  small, medium, or large overlay from your bar.
+- **SUPER-only mode.** Show only what you press while holding `SUPER`, so
+  your Hyprland shortcuts appear and ordinary typing never does.
+- **Bar widget.** Turn keycast on or off, hide mouse clicks, switch to
+  SUPER-only, and pick a small, medium, or large overlay from your bar.
 
 ## Install
 
@@ -99,6 +101,8 @@ Click the ⌨ icon in your bar for the settings panel:
 - **Show keystrokes:** turn keycast off to record without keys on screen.
   Right-clicking the icon does the same.
 - **Show mouse clicks:** hide click caps and ripples.
+- **Only while holding SUPER:** show only keys and clicks made while `SUPER`
+  is held. Typing and other shortcuts stay off screen.
 - **Size:** small, medium, or large. A preview plays when you pick one.
 
 If the icon isn't on your bar, add it with
@@ -111,6 +115,7 @@ few options the panel doesn't show:
 {
   "enabled": true,
   "showClicks": true,
+  "superOnly": false,
   "size": "medium",
   "position": "bottom",
   "fadeMs": 1500,
@@ -125,6 +130,7 @@ Everything is also scriptable, so you can bind it to keys:
 | --- | --- |
 | `omarchy-shell keycast toggle` | turn keycast on or off |
 | `omarchy-shell keycast toggleClicks` | show or hide mouse clicks |
+| `omarchy-shell keycast toggleSuperOnly` | show only keys held with `SUPER`, or all keys |
 | `omarchy-shell keycast setSize large` | `small`, `medium`, or `large` |
 | `omarchy-shell keycast togglePause` | hide typed text until toggled back |
 | `omarchy-shell keycast demo` | play a sample sequence on screen |

@@ -180,6 +180,17 @@ test("solo modifier taps match release binds", () => {
   assert.deepEqual(view(run([{ type: "mod", sym: "Super_L", mods: ["SUPER"] }], { binds })), ["SUPER → Launcher"])
 })
 
+test("heldSuper keeps only events made while SUPER is down", () => {
+  assert.equal(Model.heldSuper(key("Return", "", ["SUPER"])), true)
+  assert.equal(Model.heldSuper(key("1", "", ["SUPER", "SHIFT"])), true)
+  assert.equal(Model.heldSuper({ type: "click", button: "left", mods: ["SUPER"] }), true)
+  assert.equal(Model.heldSuper({ type: "mod", sym: "Super_L", mods: ["SUPER"] }), true)
+  assert.equal(Model.heldSuper(key("a", "a")), false)
+  assert.equal(Model.heldSuper(key("c", "", ["CTRL"])), false)
+  assert.equal(Model.heldSuper({ type: "click", button: "left", mods: [] }), false)
+  assert.equal(Model.heldSuper({ type: "mod", sym: "Control_L", mods: ["CTRL"] }), false)
+})
+
 test("key labels", () => {
   assert.equal(Model.keyLabel("a"), "A")
   assert.equal(Model.keyLabel("Escape"), "Esc")

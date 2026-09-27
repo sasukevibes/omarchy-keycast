@@ -26,6 +26,9 @@ Item {
   readonly property int fadeMs: Math.round(positive(config.fadeMs, Model.DEFAULTS.fadeMs))
   readonly property bool showText: config.showText !== false
   readonly property bool showClicks: config.showClicks !== false
+  // Only show keys pressed while SUPER is held; typing stays off screen.
+  readonly property bool superOnly: config.superOnly === true
+  onSuperOnlyChanged: if (root.superOnly) root.clear()
   readonly property bool showBindLabels: config.showBindLabels !== false
   readonly property string position: config.position === "top" ? "top" : "bottom"
 
@@ -106,6 +109,7 @@ Item {
   readonly property string publicState: JSON.stringify({
     enabled: root.castEnabled,
     showClicks: root.showClicks,
+    superOnly: root.superOnly,
     size: root.sizeName,
     recording: root.recording,
     helper: root.helperStatus,
@@ -247,6 +251,7 @@ Item {
   }
 
   function feed(ev) {
+    if (root.superOnly && !Model.heldSuper(ev)) return
     if (!root.showText && isTyping(ev)) return
     if (!root.showClicks && ev.type === "click") return
     var t = Date.now()
@@ -488,6 +493,16 @@ Item {
       root.setSetting("showClicks", !root.showClicks)
       return root.showClicks ? "on" : "off"
     }
+    function setSuperOnly(value: string): string {
+      root.setSetting("superOnly", value === "on" || value === "true")
+      return root.superOnly ? "on" : "off"
+    }
+    function toggleSuperOnly(): string {
+      root.setSetting("superOnly", !root.superOnly)
+      root.notify(root.superOnly ? "keycast: SUPER only" : "keycast: all keys",
+                  root.superOnly ? "Only keys pressed while holding SUPER will show." : "All keys will show.")
+      return root.superOnly ? "on" : "off"
+    }
     function setSize(size: string): string {
       if (!Model.SIZES.hasOwnProperty(size)) return "unknown size: use small, medium, or large"
       root.setSetting("size", size)
@@ -508,10 +523,11 @@ Item {
         enabled: root.castEnabled,
         size: root.sizeName,
         showClicks: root.showClicks,
+        superOnly: root.superOnly,
         binds: root.binds.length,
       })
     }
     function ping(): string { return "ok" }
-    function version(): string { return "0.2.0" }
+    function version(): string { return "0.3.0" }
   }
 }

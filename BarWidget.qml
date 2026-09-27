@@ -16,6 +16,7 @@ Panel {
   readonly property bool ready: state.enabled !== undefined
   readonly property bool castEnabled: state.enabled !== false
   readonly property bool showClicks: state.showClicks !== false
+  readonly property bool superOnly: state.superOnly === true
   readonly property string sizeName: state.size || "medium"
   readonly property bool live: !!state.recording && state.helper === "live"
   readonly property var sizes: ["small", "medium", "large"]
@@ -25,9 +26,9 @@ Panel {
     if (!castEnabled) return "Off. Recordings won't show keys."
     if (state.helper === "missing") return "Helper not installed. Run install.sh."
     if (state.helper === "failed") return "Couldn't read keys. See `omarchy-shell keycast status`."
-    if (live) return "Showing keys in this recording."
+    if (live) return superOnly ? "Showing SUPER keys in this recording." : "Showing keys in this recording."
     if (state.recording) return "Starting…"
-    return "Ready. Keys show when you start a recording."
+    return superOnly ? "Ready. Keys held with SUPER show when you record." : "Ready. Keys show when you start a recording."
   }
 
   FileView {
@@ -57,6 +58,7 @@ Panel {
 
   function setEnabled(on) { send([on ? "enable" : "disable"]) }
   function setClicks(on) { send(["setClicks", on ? "on" : "off"]) }
+  function setSuperOnly(on) { send(["setSuperOnly", on ? "on" : "off"]) }
   function chooseSize(name) { send(["setSize", name]) }
 
   implicitWidth: button.implicitWidth
@@ -140,6 +142,16 @@ Panel {
           fontFamily: root.bar.fontFamily
           checked: root.showClicks
           onClicked: root.setClicks(!root.showClicks)
+        }
+
+        Toggle {
+          width: parent.width
+          label: "Only while holding SUPER"
+          description: "Show keys and clicks only when SUPER is held."
+          foreground: root.bar.foreground
+          fontFamily: root.bar.fontFamily
+          checked: root.superOnly
+          onClicked: root.setSuperOnly(!root.superOnly)
         }
 
         PanelSeparator {
