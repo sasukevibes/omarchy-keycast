@@ -59,7 +59,25 @@ test("a combo closes the text row", () => {
 })
 
 test("repeated combos collapse into a counter", () => {
-  assert.deepEqual(view(run([key("Down"), key("Down", "", [], { repeat: true }), key("Down")])), ["↓ ×3"])
+  assert.deepEqual(view(run([key("Down"), key("Down"), key("Down")])), ["↓ ×3"])
+})
+
+const held = (ev, n) => Array.from({ length: n }, () => Object.assign({}, ev, { repeat: true }))
+
+test("a held text key shows once", () => {
+  assert.deepEqual(view(run([...type("as"), ...held(key("s", "s"), 20), ...type("d")])), ["asd"])
+})
+
+test("a held special key or combo shows once", () => {
+  assert.deepEqual(view(run([key("Down"), ...held(key("Down"), 20)])), ["↓"])
+  assert.deepEqual(view(run([key("x", "", ["CTRL"]), ...held(key("x", "", ["CTRL"]), 20)])), ["CTRL+X"])
+})
+
+test("a held key stays on screen while it repeats", () => {
+  let state = Model.apply(Model.create(), key("s", "s"), {}, 1000)
+  for (let t = 1030; t <= 5000; t += 30) state = Model.apply(state, key("s", "s", [], { repeat: true }), {}, t)
+  assert.deepEqual(view(Model.expire(state, 5100)), ["s"])
+  assert.deepEqual(view(Model.expire(state, 5000 + Model.DEFAULTS.fadeMs)), [])
 })
 
 test("rows are capped and oldest drop first", () => {

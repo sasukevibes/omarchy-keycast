@@ -90,7 +90,7 @@ in the middle of a recording.
 - **Model.js** is a pure JavaScript state machine, tested with `node --test`.
   It turns protocol events into display rows:
   - *combo* rows: key caps such as `SUPER` `SHIFT` `Enter`, with a `×N`
-    counter on repeats, and the Hyprland bind description when the combo
+    counter when pressed again (a held key shows once), and the Hyprland bind description when the combo
     matches `hyprctl binds -j` (modmask plus case-insensitive keysym, or
     `code:`).
   - *text* rows: typed characters grouped into a single running line.
